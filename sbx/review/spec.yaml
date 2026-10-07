@@ -1,0 +1,53 @@
+# Docker Sandboxes mixin kit for building this repository's EPUB with Re:VIEW.
+# Adds Ruby, Bundler and Re:VIEW to an agent sandbox (claude, codex, opencode).
+# See sbxenv.yaml at the repository root for usage.
+schemaVersion: "2"
+kind: mixin
+name: review
+displayName: Re:VIEW toolchain
+description: Installs Ruby, Bundler and Re:VIEW 5.11.0 (pinned by Gemfile.lock) for building the EPUB.
+
+agentInstructions:
+  content: |
+    ## Re:VIEW toolchain
+
+    このサンドボックスには Ruby・Bundler・Re:VIEW 5.11.0 がシステム gem として入っている。
+
+    - EPUB のビルド: `bundle exec rake epub`（`book.epub` が生成される）
+    - 後片付け: `bundle exec rake clean`
+    - 作業規則はリポジトリ直下の `CLAUDE.md` に従うこと（Git のコミットは行わない）。
+
+    PDF 生成（LaTeX）用のツールは入っていない。
+
+permissions:
+  network:
+    allow:
+      # apt mirrors (both amd64 and arm64)
+      - deb.debian.org
+      - security.debian.org
+      - archive.ubuntu.com
+      - security.ubuntu.com
+      - ports.ubuntu.com
+      # gem install / bundle install
+      - rubygems.org
+      - "*.rubygems.org"
+
+setup:
+  install:
+    # Install Ruby, then install the gems pinned by the workspace's Gemfile.lock
+    # system-wide. Keep the Bundler version in sync with BUNDLED WITH in Gemfile.lock.
+    # bundle install may rewrite the lockfile, so it runs on a copy in a temporary
+    # directory and leaves the workspace's Gemfile.lock untouched.
+    - command: |
+        set -eux
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get install -y --no-install-recommends ruby-full build-essential zip unzip
+        rm -rf /var/lib/apt/lists/*
+        gem install --no-document bundler:4.0.15
+        tmp=$(mktemp -d)
+        cp "$WORKSPACE_DIR/Gemfile" "$WORKSPACE_DIR/Gemfile.lock" "$tmp/"
+        (cd "$tmp" && bundle install)
+        rm -rf "$tmp"
+      user: "0"
+      description: Install Ruby, Bundler and the gems pinned by Gemfile.lock

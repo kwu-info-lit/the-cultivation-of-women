@@ -1,0 +1,32 @@
+review_version: 5.0
+
+bookname: book
+language: ja
+booktitle: 婦人の修養
+aut: ["鳩山 春子"]
+adp: ["Kaoru Mori",]
+
+date: 2026-10-31
+history: [["2026-10-31"]]
+
+debug: true
+
+stylesheet: ["style.css"]
+toclevel: 1
+secnolevel: 0
+toc: true
+
+coverimage: images/cover-1000x1500.png
+titlepage: false
+
+direction: "rtl"
+
+epubmaker:
+  htmlext: xhtml
+
+texstyle: ["reviewmacro"]
+texdocumentclass: ["review-jsbook", "media=print,paper=a5"]
+
+pdfmaker:
+  coverimage: cover-a5.ai
+  colophon: true

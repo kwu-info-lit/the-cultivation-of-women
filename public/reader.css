@@ -1,0 +1,1038 @@
+/* ==========================================================================
+   Reader UI
+   Book content styles live in two cascade layers: `book` (the EPUB's own
+   stylesheet, scoped to .epub-body) and `reader` (typography overrides that
+   the reader controls). Unlayered UI styles always win over both.
+   ========================================================================== */
+
+@layer book, reader;
+
+:root {
+    --paper: #fbfaf6;
+    --ink: #23201c;
+    --muted: #7d766c;
+    --faint: rgba(35, 32, 28, .07);
+    --line: rgba(35, 32, 28, .14);
+    --accent: #802358;
+    --accent-soft: rgba(128, 35, 88, .1);
+    --surface: #ffffff;
+    --chrome: rgba(251, 250, 246, .88);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 8px 32px rgba(0, 0, 0, .12);
+    --mark: rgba(214, 160, 20, .38);
+
+    --ui-font: system-ui, -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif;
+    --system-mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+    --mincho: "Shippori Mincho", var(--system-mincho);
+    --gothic: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "YuGothic", "Meiryo", sans-serif;
+
+    --book-font: var(--mincho);
+    --font-size: 18px;
+    --line-height: 1.95;
+
+    --ease: cubic-bezier(.2, .8, .2, 1);
+    color-scheme: light;
+}
+
+:root[data-theme="sepia"] {
+    --paper: #f3ecdb;
+    --ink: #3b3024;
+    --muted: #8a7b66;
+    --faint: rgba(59, 48, 36, .08);
+    --line: rgba(59, 48, 36, .16);
+    --accent: #7c2452;
+    --surface: #faf5e9;
+    --chrome: rgba(243, 236, 219, .9);
+}
+
+:root[data-theme="dark"] {
+    --paper: #18171b;
+    --ink: #ddd7cc;
+    --muted: #8f887e;
+    --faint: rgba(255, 255, 255, .07);
+    --line: rgba(255, 255, 255, .13);
+    --accent: #e08ab5;
+    --accent-soft: rgba(224, 138, 181, .14);
+    --surface: #242328;
+    --chrome: rgba(24, 23, 27, .88);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 32px rgba(0, 0, 0, .45);
+    --mark: rgba(224, 170, 40, .32);
+    color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root[data-theme="auto"] {
+        --paper: #18171b;
+        --ink: #ddd7cc;
+        --muted: #8f887e;
+        --faint: rgba(255, 255, 255, .07);
+        --line: rgba(255, 255, 255, .13);
+        --accent: #e08ab5;
+        --accent-soft: rgba(224, 138, 181, .14);
+        --surface: #242328;
+        --chrome: rgba(24, 23, 27, .88);
+        --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 32px rgba(0, 0, 0, .45);
+        --mark: rgba(224, 170, 40, .32);
+        color-scheme: dark;
+    }
+}
+
+:root[data-font="gothic"] {
+    --book-font: var(--gothic);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
+body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--ui-font);
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color .3s ease, color .3s ease;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.icon {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: none;
+}
+
+.icon-button {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--ink);
+}
+
+.icon-button:hover {
+    background: var(--faint);
+}
+
+.text-button {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    padding: .5em 1.4em;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ---- Loader ------------------------------------------------------------ */
+
+#loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    background: var(--paper);
+    transition: opacity .5s var(--ease), visibility .5s;
+}
+
+#loader.done {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-mark {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    writing-mode: vertical-rl;
+    /* The book's font (Shippori Mincho) is only added partway through loading;
+       using system fonts here keeps the glyphs from swapping mid-load. The
+       fixed line-height keeps the column widths steady as well. */
+    font-family: var(--system-mincho);
+    line-height: 1.5;
+    color: var(--ink);
+}
+
+.loader-title {
+    font-size: 40px;
+    letter-spacing: .35em;
+    font-weight: 600;
+}
+
+.loader-author {
+    font-size: 17px;
+    letter-spacing: .3em;
+    color: var(--muted);
+    margin-inline-start: 5.5em;
+}
+
+.loader-bar {
+    width: 160px;
+    height: 2px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+#loader-progress {
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    transition: width .2s linear;
+}
+
+#loader-message {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 1.5em;
+    text-align: center;
+}
+
+/* ---- Stage ------------------------------------------------------------- */
+
+#stage {
+    position: fixed;
+    inset: 0;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    touch-action: pinch-zoom;
+    user-select: text;
+}
+
+#viewport {
+    position: absolute;
+    overflow: hidden;
+    overflow: clip;
+}
+
+#content {
+    position: absolute;
+    column-fill: auto;
+    orphans: 1;
+    widows: 1;
+    will-change: transform;
+}
+
+#content.is-cover {
+    display: grid;
+    place-items: center;
+}
+
+.pager-end {
+    block-size: 0;
+    inline-size: 0;
+    overflow: hidden;
+}
+
+#running-head,
+#folio {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 11.5px;
+    letter-spacing: .08em;
+    color: var(--muted);
+    font-feature-settings: "tnum";
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 64px;
+    transition: opacity .25s ease;
+}
+
+#running-head {
+    top: calc(env(safe-area-inset-top) + 20px);
+    font-family: var(--book-font);
+}
+
+#folio {
+    bottom: calc(env(safe-area-inset-bottom) + 18px);
+}
+
+body.chrome-visible #running-head,
+body.chrome-visible #folio {
+    opacity: 0;
+}
+
+.edge-nav {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 88px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity .2s ease, background-color .2s ease;
+}
+
+.edge-left { left: 4px; }
+.edge-right { right: 4px; }
+
+@media (hover: hover) and (pointer: fine) {
+    #stage:hover .edge-nav { opacity: .45; }
+    #stage .edge-nav:hover { opacity: 1; background: var(--faint); }
+}
+
+@media (hover: none) {
+    .edge-nav { display: none; }
+}
+
+/* ---- Top and bottom bars ----------------------------------------------- */
+
+.chrome {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background: var(--chrome);
+    -webkit-backdrop-filter: saturate(1.4) blur(16px);
+    backdrop-filter: saturate(1.4) blur(16px);
+    transition: transform .3s var(--ease), opacity .3s var(--ease), visibility .3s;
+}
+
+body:not(.chrome-visible) .chrome {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#topbar {
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: calc(env(safe-area-inset-top) + 6px) max(env(safe-area-inset-right), 8px) 6px max(env(safe-area-inset-left), 8px);
+    border-bottom: 1px solid var(--line);
+}
+
+body:not(.chrome-visible) #topbar {
+    transform: translateY(-100%);
+}
+
+.topbar-title {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: .8em;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#book-title {
+    font-family: var(--mincho);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: .15em;
+}
+
+#book-author {
+    font-size: 12.5px;
+    color: var(--muted);
+    letter-spacing: .1em;
+}
+
+#bottombar {
+    bottom: 0;
+    padding: 10px max(env(safe-area-inset-right), 20px) calc(env(safe-area-inset-bottom) + 12px) max(env(safe-area-inset-left), 20px);
+    border-top: 1px solid var(--line);
+}
+
+body:not(.chrome-visible) #bottombar {
+    transform: translateY(100%);
+}
+
+.bottombar-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+#chapter-label {
+    color: var(--ink);
+    font-family: var(--mincho);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#progress-label {
+    font-feature-settings: "tnum";
+    white-space: nowrap;
+}
+
+.bottombar-slider {
+    position: relative;
+}
+
+#slider {
+    width: 100%;
+    margin: 0;
+    height: 28px;
+    background: transparent;
+    accent-color: var(--accent);
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+#slider::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(var(--fill-dir, to right), var(--accent) var(--fill, 0%), var(--line) var(--fill, 0%));
+}
+
+#slider::-moz-range-track {
+    height: 3px;
+    border-radius: 3px;
+    background: var(--line);
+}
+
+#slider::-moz-range-progress {
+    height: 3px;
+    border-radius: 3px;
+    background: var(--accent);
+}
+
+#slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    margin-top: -6.5px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--accent);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+}
+
+#slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--accent);
+}
+
+#slider-preview {
+    position: absolute;
+    bottom: 34px;
+    translate: -50% 0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 12.5px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* ---- Panels ------------------------------------------------------------ */
+
+#scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(0, 0, 0, .28);
+    animation: fade-in .25s ease;
+}
+
+.panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    z-index: 30;
+    width: min(360px, 88vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.panel-start {
+    left: 0;
+    padding-left: env(safe-area-inset-left);
+    animation: slide-from-left .3s var(--ease);
+}
+
+.panel-end {
+    right: 0;
+    padding-right: env(safe-area-inset-right);
+    animation: slide-from-right .3s var(--ease);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 10px 6px 20px;
+}
+
+.panel-header h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .1em;
+}
+
+.panel-body {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px 12px 24px;
+}
+
+.book-card {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 8px 8px 18px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+
+#cover-thumb {
+    width: 56px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .15), 0 4px 12px rgba(0, 0, 0, .12);
+    background: var(--faint);
+}
+
+#cover-thumb:not([src]) {
+    visibility: hidden;
+}
+
+.book-card p {
+    margin: 0;
+}
+
+.book-card-title {
+    font-family: var(--mincho);
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: .15em;
+}
+
+.book-card-author {
+    margin-top: 4px !important;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.toc-list,
+.toc-list ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.toc-list ol {
+    padding-left: 1em;
+}
+
+.toc-list a {
+    display: flex;
+    align-items: baseline;
+    gap: .6em;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    font-family: var(--mincho);
+    font-size: 15.5px;
+    line-height: 1.5;
+}
+
+.toc-list a:hover {
+    background: var(--faint);
+}
+
+.toc-list a[aria-current="true"] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.toc-num {
+    flex: none;
+    min-width: 2.6em;
+    color: var(--muted);
+    font-size: .88em;
+}
+
+.toc-list a[aria-current="true"] .toc-num {
+    color: inherit;
+}
+
+.credits {
+    margin: 20px 8px 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.credits summary {
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.credits ul {
+    list-style: none;
+    padding: 6px 0 0;
+    margin: 0;
+    columns: 2;
+    line-height: 1.9;
+}
+
+/* ---- Search ------------------------------------------------------------ */
+
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 16px 0;
+    padding: 0 12px;
+    border-radius: 10px;
+    background: var(--faint);
+    color: var(--muted);
+}
+
+.search-form:focus-within {
+    outline: 2px solid var(--accent);
+}
+
+#search-input {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 16px;
+    outline: none;
+}
+
+.search-status {
+    margin: 10px 20px 4px;
+    font-size: 12.5px;
+    color: var(--muted);
+    min-height: 1.4em;
+}
+
+.search-results {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+    margin: 0;
+    padding: 0 12px 24px;
+}
+
+.search-results button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    line-height: 1.7;
+}
+
+.search-results button:hover {
+    background: var(--faint);
+}
+
+.search-results .result-chapter {
+    display: block;
+    font-size: 11.5px;
+    color: var(--muted);
+    letter-spacing: .05em;
+}
+
+.search-results .result-text {
+    font-family: var(--book-font);
+    font-size: 14.5px;
+}
+
+.search-results mark {
+    background: var(--mark);
+    color: inherit;
+    border-radius: 2px;
+}
+
+.search-results .result-group {
+    padding: 14px 10px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .08em;
+}
+
+/* ---- Settings popover -------------------------------------------------- */
+
+.popover {
+    position: fixed;
+    z-index: 40;
+    top: calc(env(safe-area-inset-top) + 56px);
+    right: max(env(safe-area-inset-right), 10px);
+    width: min(340px, calc(100vw - 20px));
+    padding: 8px 16px 14px;
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--line);
+    animation: pop-in .2s var(--ease);
+    transform-origin: top right;
+}
+
+.setting {
+    padding: 10px 0;
+}
+
+.setting + .setting {
+    border-top: 1px solid var(--line);
+}
+
+.setting-label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: .08em;
+}
+
+.stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stepper button {
+    flex: 1;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: none;
+    font-family: var(--mincho);
+    font-size: 17px;
+}
+
+.stepper button:first-child {
+    font-size: 14px;
+}
+
+.stepper button:hover {
+    background: var(--faint);
+}
+
+.stepper button:disabled {
+    opacity: .35;
+    cursor: default;
+}
+
+.stepper small {
+    font-family: var(--ui-font);
+    font-size: .75em;
+    margin-left: 2px;
+}
+
+#font-size-value {
+    min-width: 4em;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    font-feature-settings: "tnum";
+}
+
+.segmented {
+    display: flex;
+    padding: 3px;
+    gap: 3px;
+    border-radius: 10px;
+    background: var(--faint);
+}
+
+.segmented button {
+    flex: 1;
+    min-height: 34px;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    font-size: 13.5px;
+    color: var(--muted);
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.segmented button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+}
+
+:root[data-theme="dark"] .segmented button[aria-pressed="true"] {
+    background: rgba(255, 255, 255, .12);
+}
+
+.font-mincho { font-family: var(--mincho); }
+.font-gothic { font-family: var(--gothic); }
+
+.swatches button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 4px 5px;
+    font-size: 12px;
+}
+
+.swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, .18);
+}
+
+.swatch-light { background: #fbfaf6; }
+.swatch-sepia { background: #f3ecdb; }
+.swatch-dark { background: #18171b; border-color: rgba(255, 255, 255, .25); }
+.swatch-auto { background: linear-gradient(135deg, #fbfaf6 50%, #18171b 50%); }
+
+/* ---- Toast ------------------------------------------------------------- */
+
+#toast {
+    position: fixed;
+    z-index: 50;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom) + 90px);
+    translate: -50% 0;
+    max-width: calc(100vw - 32px);
+    width: max-content;
+    padding: 9px 18px;
+    border-radius: 14px;
+    text-align: center;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 13px;
+    box-shadow: var(--shadow);
+    animation: fade-in .2s ease;
+}
+
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes slide-from-left { from { transform: translateX(-100%); } }
+@keyframes slide-from-right { from { transform: translateX(100%); } }
+@keyframes pop-in { from { opacity: 0; transform: scale(.96); } }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+    }
+}
+
+/* ==========================================================================
+   Book typography (controlled by the reader)
+   ========================================================================== */
+
+@layer reader {
+    .epub-body {
+        margin: 0;
+        padding: 0;
+        writing-mode: horizontal-tb;
+        font-family: var(--book-font);
+        font-size: var(--font-size);
+        line-height: var(--line-height);
+        color: var(--ink);
+        text-align: justify;
+        text-justify: inter-character;
+        line-break: strict;
+        word-break: normal;
+        overflow-wrap: anywhere;
+        hanging-punctuation: allow-end;
+        text-spacing-trim: space-first;
+        font-kerning: normal;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+
+    .epub-body.vertical {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+    }
+
+    .epub-body p {
+        margin: 0;
+        font-size: 1em;
+        line-height: inherit;
+        text-indent: 1em;
+        text-align: justify;
+    }
+
+    .epub-body h1,
+    .epub-body h2,
+    .epub-body h3,
+    .epub-body h4 {
+        font-family: var(--book-font);
+        font-weight: 700;
+        line-height: 1.5;
+        text-align: start;
+        text-indent: 0;
+        border: 0;
+        padding: 0;
+        break-after: avoid;
+        break-inside: avoid;
+    }
+
+    .epub-body h1 {
+        font-size: 1.55em;
+        letter-spacing: .12em;
+        margin-block: 0 2.2em;
+        padding-inline-start: 2.5em;
+        color: var(--ink);
+    }
+
+    .epub-body h2 {
+        font-size: 1.3em;
+        margin-block: 2em 1em;
+        padding-inline-start: 2em;
+    }
+
+    .epub-body h3 {
+        font-size: 1.1em;
+        letter-spacing: .06em;
+        margin-block: 2.2em 1em;
+        padding-inline-start: 3em;
+        color: var(--ink);
+    }
+
+    .epub-body h1:first-child,
+    .epub-body h2:first-child,
+    .epub-body h3:first-child {
+        margin-block-start: 0;
+    }
+
+    .epub-body ruby {
+        ruby-align: center;
+    }
+
+    .epub-body rt {
+        font-size: .5em !important;
+        line-height: 1 !important;
+        font-feature-settings: "ruby";
+        color: inherit;
+        opacity: .92;
+    }
+
+    .epub-body rp {
+        display: none;
+    }
+
+    :root[data-ruby="off"] .epub-body rt {
+        display: none;
+    }
+
+    .epub-body a,
+    .epub-body a:link,
+    .epub-body a:visited {
+        border: 0;
+        color: var(--accent);
+        text-decoration: none;
+    }
+
+    .epub-body a[href]:hover {
+        text-decoration: underline;
+        text-underline-offset: .25em;
+    }
+
+    .epub-body img {
+        max-width: var(--page-width);
+        max-height: var(--page-height);
+        object-fit: contain;
+    }
+
+    .epub-body.is-cover .cover-image,
+    .epub-body.is-cover div:has(> img) {
+        display: contents;
+    }
+
+    .epub-body.is-cover {
+        writing-mode: horizontal-tb;
+    }
+
+    .epub-body.is-cover img {
+        display: block;
+        margin: 0;
+        width: auto;
+        height: auto;
+        max-width: var(--page-width);
+        max-height: var(--page-height);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .12), 0 16px 48px rgba(0, 0, 0, .16);
+    }
+
+    /* The book's own table of contents page */
+    .epub-body nav ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .epub-body nav li {
+        margin: 0;
+        line-height: 2.1;
+    }
+
+    .epub-body nav h1 {
+        margin-block-end: 1.5em;
+    }
+
+    ::highlight(search-hit) {
+        background-color: var(--mark);
+        color: inherit;
+    }
+}

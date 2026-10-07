@@ -1,0 +1,15 @@
+schemaVersion: "1"
+
+args:
+  agent:
+    default: claude
+    description: Coding agent to run in the sandbox (opencode is the route to Grok)
+    enum: [claude, codex, opencode]
+
+name: ${{ env.args.agent }}-fujin-no-shuyo
+
+agent: ${{ env.args.agent }}
+kits:
+  - ./sbx/review
+
+workspace: .
