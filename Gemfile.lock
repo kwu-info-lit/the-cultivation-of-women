@@ -1,0 +1,58 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    base64 (0.3.0)
+    csv (3.3.5)
+    image_size (3.6.0)
+    logger (1.7.0)
+    nkf (0.2.0)
+    pastel (0.8.0)
+      tty-color (~> 0.5)
+    rake (13.4.2)
+    review (5.11.0)
+      base64
+      csv
+      image_size
+      logger
+      nkf
+      rexml
+      rouge
+      rubyzip
+      tty-logger
+    rexml (3.4.4)
+    rouge (5.0.0)
+      strscan (~> 3.1)
+    rubyzip (3.4.1)
+    strscan (3.1.6)
+    tty-color (0.6.0)
+    tty-logger (0.6.0)
+      pastel (~> 0.8)
+
+PLATFORMS
+  arm64-darwin-25
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  rake
+  review (= 5.11.0)
+
+CHECKSUMS
+  base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
+  bundler (4.0.15) sha256=a4ceb882fe94a0e0ac63cd0813932bbfd631a14e5ac0b7975189b19a4d28d9e7
+  csv (3.3.5) sha256=6e5134ac3383ef728b7f02725d9872934f523cb40b961479f69cf3afa6c8e73f
+  image_size (3.6.0) sha256=1b9c4196cb658bf503a887920543a3991e927a4b767a5c770fb9665bce0dcb28
+  logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
+  nkf (0.2.0) sha256=fbc151bda025451f627fafdfcb3f4f13d0b22ae11f58c6d3a2939c76c5f5f126
+  pastel (0.8.0) sha256=481da9fb7d2f6e6b1a08faf11fa10363172dc40fd47848f096ae21209f805a75
+  rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
+  review (5.11.0) sha256=d459f4fb9d559f70e97b36242892c937c101b93a001bc0e8d50665c36a8cc9d1
+  rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
+  rouge (5.0.0) sha256=e2de9bba2f9cb88f8a73bca3643b560b2b398f32f91bf716f584477bc0175ebc
+  rubyzip (3.4.1) sha256=0a79e745b5c25872ebd148457df5665da8530ed8626c993b01457128f173ca02
+  strscan (3.1.6) sha256=ebd56df0b0468b00a1f2004b4078c34df58c3506b2bba939e7531892aece81f3
+  tty-color (0.6.0) sha256=6f9c37ca3a4e2367fb2e6d09722762647d6f455c111f05b59f35730eeb24332a
+  tty-logger (0.6.0) sha256=9352d0e3ebc4f9d59b63135806e38c0d6012adc04c907dde96db33daa64e50eb
+
+BUNDLED WITH
+  4.0.15

@@ -1,0 +1,45 @@
+PREDEF:
+  - contents/predef/00_letters.re # 書簡
+  - contents/predef/01_prefaces.re # 婦人の修養序
+  - contents/predef/02_foreword.re # 緒言
+
+CHAPS:
+  - contents/chaps/01_necessity.re # 一 交際の必要
+  - contents/chaps/02_etiquette.re # 二 交際と禮法
+  - contents/chaps/03_secrets_of_socializing.re # 三 交際の秘訣
+  - contents/chaps/04_visiting_etiquette.re # 四 訪問の禮儀
+  - contents/chaps/05_conversation.re # 五 談話の心得
+  - contents/chaps/06_table_manners.re # 六 食事の作法
+  - contents/chaps/07_clothing.re # 七 衣服の注意
+  - contents/chaps/08_children_and_etiquette.re # 八 子供と禮法
+  - contents/chaps/09_young_men_and_women.re # 九 青年男女の交際
+  - contents/chaps/10_contracts_and_marriage.re # 十 契約と結婚
+  - contents/chaps/11_letter_examples.re # 書翰文例
+  - contents/chaps/12_parents_and_love.re # 子女の戀愛に對する親の注意
+  - contents/chaps/13_student_suicide.re # 學生の自殺と家庭教育
+  - contents/chaps/14_on_socializing.re # 交際に就いて
+  - contents/chaps/15_socializing_and_virtue.re # 交際と德行
+  - contents/chaps/16_faults_of_japanese_women.re # 交際社會に於ける日本婦人の缺點
+  - contents/chaps/17_on_gifts.re # 贈答に就いて
+  - contents/chaps/18_on_letters.re # 手紙に就いて
+  - contents/chaps/19_society_and_happiness.re # 社交と幸福
+  - contents/chaps/20_western_society.re # 歐米の社交界
+  - contents/chaps/21_amusement_and_music.re # 娛樂と音樂
+  - contents/chaps/22_theater.re # 高尚なる娛樂としての演劇
+  - contents/chaps/23_civilization_and_women.re # 國の文明と婦人の優遇
+  - contents/chaps/24_corruption_and_defeat.re # 社會の腐敗と戰敗
+  - contents/chaps/25_womens_travel.re # 婦人の旅行に就いて
+  - contents/chaps/26_travel_notes.re # 歐米週遊雜記
+  - contents/chaps/27_imperial_rescript.re # 詔書
+  - contents/chaps/28_condolence.re # 弔詞
+  - contents/chaps/29_training_mind_and_body.re # 心身の鍛練に就きて
+  - contents/chaps/30_anniversary_address_1.re # 創立記念式辭（震災後第一回）
+  - contents/chaps/31_martyrs.re # 殉難者の靈に
+  - contents/chaps/32_social_education.re # 社會教育
+  - contents/chaps/33_anniversary_address_2.re # 創立記念式辭（震災後第二回）
+  - contents/chaps/34_school_reconstruction.re # 我校の復興に就て
+  - contents/chaps/35_tragedy_from_trifles.re # 悲慘の半は瑣事より起る
+
+APPENDIX:
+
+POSTDEF:
